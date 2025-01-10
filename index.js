@@ -17,28 +17,55 @@ const pool = new Pool({
   database: process.env.DB_NAME,
 });
 
-app.get("/test", async (req, res) => {
+app.get("/get-user/:email", async (req, res) => {
   try {
+    const email = req.params.email;
     const client = await pool.connect();
-    const result = await client.query(
-      "SELECT brand FROM cars WHERE brand = 'Ford'"
-    );
+    const result = await client.query("SELECT * FROM users WHERE email = $1;", [
+      email,
+    ]);
     client.release();
-    console.log("Data:", result.rows);
-
-    res.json(result.rows);
+    if (result.rows.length === 0) {
+      res.json(null);
+    } else {
+      res.json(result.rows[0]);
+    }
   } catch (error) {
     console.error("Database error:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-app.get("/add-data", async (req, res) => {
-  const client = await pool.connect();
-  await client.query(
-    "INSERT INTO cars (brand, model, year) VALUES ('BMW', 'M8', '1999')"
-  );
-  client.release();
+app.post("/create-user", async (req, res) => {
+  try {
+    const { email, name, role } = req.body;
+    console.log(req.body);
+    const client = await pool.connect();
+    const result = await client.query(
+      "INSERT INTO users (name, email, role) VALUES ($1, $2, $3);",
+      [name, email, role]
+    );
+    client.release();
+    console.log("New User Created:", result.rows[0]);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+app.get("/api/getBooks", async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(
+      "SELECT * FROM books ORDER BY RANDOM() LIMIT 10 OFFSET 0;"
+    );
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Database error:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 app.listen(port, () => {

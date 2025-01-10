@@ -9,6 +9,16 @@
       "database": "postgres",
       "username": "postgres",
       "connectionTimeout": 30
+    },
+    {
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "Booklytic",
+      "database": "Booklytic",
+      "username": "postgres",
+      "connectionTimeout": 30
     }
   ]
 }
